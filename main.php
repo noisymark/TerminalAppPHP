@@ -5,7 +5,7 @@ include_once 'components/tools.php';
 class Main{
 
     private $dev;
-    private $users;
+    private $users=[];
 
     // CONSTRUCTOR - EXECUTES ON PROGRAM STARTUP
 
@@ -57,6 +57,10 @@ class Main{
             case 1:
                 $this->usersMenu();
                 break;
+            case 2:
+                $this->postsMenu();
+                break;
+            
             default:
             echo 'NOT IMPLEMENTED YET !' . PHP_EOL;
             $this->mainMenu();
@@ -79,6 +83,19 @@ class Main{
         $this->usersChooser();
     }
 
+    private function postsMenu(){
+        echo '---------------' . PHP_EOL;
+        echo '  POSTS MENU   ' . PHP_EOL;
+        echo '---------------' . PHP_EOL;
+        echo '1. READ' . PHP_EOL;
+        echo '2. CREATE' . PHP_EOL;
+        echo '3. UPDATE' . PHP_EOL;
+        echo '4. DELETE' . PHP_EOL;
+        echo '5. GO BACK' . PHP_EOL;
+        echo '---------------' . PHP_EOL;
+        $this->postsChooser();
+    }
+
     // OPTION CHOOSER FOR USER MANIPULATION MENU
     private function usersChooser(){
         switch(Tools::numberRange('Option: ',1,5)){
@@ -89,7 +106,7 @@ class Main{
                 $this->createNewUser();
                 break;
             case 1:
-                if(count($this->users)===0){
+                if((count($this->users))===0){
                     echo 'No users in APP' . PHP_EOL;
                     $this->usersMenu();
                 } else{
@@ -115,6 +132,36 @@ class Main{
         }
     }
 
+    private function postsChooser(){
+        switch(Tools::numberRange('Option: ',1,5)){
+            case 5:
+                $this->mainMenu();
+                break;
+            case 2:
+                $this->createNewPost();
+                break;
+            case 1:
+                $this->readPosts();
+                break;
+            case 3:
+                if(count($this->users)===0){
+                    echo 'No users in APP' . PHP_EOL;
+                    $this->postsMenu();
+                }else{
+                    $this->editPost();
+                }
+                break;
+            case 4:
+                if(count($this->users)===0){
+                    echo 'No users in APP' . PHP_EOL;
+                    $this->postsMenu();
+                } else{
+                $this->deletePost();
+                }
+                break;
+        }
+    }
+
     // FUNCTION FOR MANUAL USER CREATION
 
     private function createNewUser(){
@@ -127,6 +174,21 @@ class Main{
         echo '-----------' . PHP_EOL;
         echo ' SUCCESS ! ' . PHP_EOL;
         $this->usersMenu();
+    }
+
+    private function createNewPost(){
+        if((count($this->users))===0){echo 'CREATE AN USER FIRST !' . PHP_EOL; $this->postsMenu();} else{
+        $o = new stdClass();
+        $o->postname = Tools::textInput('Name of the post: ');
+        $o->postdesc = Tools::textInput('Enter the description: ');
+        $this->readUsers(false);
+        $ww = Tools::numberRange('Choose user: ',1,count($this->users));
+        $ww--;
+        $this->users[$ww]->post[] = $o;
+        echo '-----------' . PHP_EOL;
+        echo ' SUCCESS ! ' . PHP_EOL;
+        $this->postsMenu();
+    }
     }
 
     // FUNCTION FOR DISPLAYING USERS IN APP
@@ -144,6 +206,34 @@ class Main{
         if($showMenu){
             $this->usersMenu();
         }
+    }
+
+    private function readPosts($showMenu=true){
+        if(count($this->users)!==0){
+        echo '--------------------------' . PHP_EOL;
+        echo 'SELECT USER TO VIEW POSTS:' . PHP_EOL;
+        $this->readUsers(false);
+        $rr = Tools::numberRange('Choose user: ',1,count($this->users));
+        $rr--;
+        if(isset($this->users[$rr]->post)){$rw=$this->users[$rr]->post;}else{$rw=null;}
+        if($rw===null || count($rw)===0){
+            echo 'THIS USER HAS NO POSTS !' . PHP_EOL;
+            echo '--------------------------' . PHP_EOL;
+            $this->postsMenu();
+        } else{
+        $csu=1;
+        foreach($this->users[$rr]->post as $posts){
+            echo $csu++ . '. ' . 'PostName: ' .$posts->postname . "\n" . '   Description: ' . $posts->postdesc . PHP_EOL;
+        }
+        echo '------------';
+        if($showMenu){
+            $this->postsMenu();
+        }
+    }
+
+    } else{
+        echo 'CREATE AN USER FIRST !' . PHP_EOL; $this->postsMenu();
+    }
     }
 
     // FUNCTION FOR EDITING USER INFORMATION
@@ -178,6 +268,10 @@ class Main{
         $this->users[] = $this->createUser('Ivan','Ivanovič','ivan@example.com','samplepw');
         $this->users[] = $this->createUser('Mirta','Martac','mirta@example.com','mrita123');
         $this->users[] = $this->createUser('Janko','Jaković','janko@example.com','jasamjanko');
+
+        $this->users[0]->post[] = $this->createPost('Test1','Desc1');
+        $this->users[1]->post[] = $this->createPost('Test2','Desc2');
+        $this->users[2]->post[] = $this->createPost('Test3','Desc3');
     }
 
     // AUTOMATIC FUNCTION TO CREATE USERS - TYPICALLY FOR TESTINFO FUNCTION
@@ -188,6 +282,14 @@ class Main{
         $u->email = $email;
         $u->password = $password;
         return $u;
+    }
+
+    // AUTOMATIC FUNCTION TO CREATE POSTS - TYPICALLY FOR TESTINFO FUNCTION
+    private function createPost($postname,$postdesc){
+        $o = new stdClass();
+        $o->postname=$postname;
+        $o->postdesc=$postdesc;
+        return $o;
     }
 
 }
