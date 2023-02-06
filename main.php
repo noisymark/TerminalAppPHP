@@ -83,6 +83,7 @@ class Main{
         $this->usersChooser();
     }
 
+    // POSTS MANIPULATION MENU
     private function postsMenu(){
         echo '---------------' . PHP_EOL;
         echo '  POSTS MENU   ' . PHP_EOL;
@@ -97,6 +98,7 @@ class Main{
     }
 
     // OPTION CHOOSER FOR USER MANIPULATION MENU
+    
     private function usersChooser(){
         switch(Tools::numberRange('Option: ',1,5)){
             case 5:
@@ -132,32 +134,24 @@ class Main{
         }
     }
 
+    // OPTION CHOOSER FOR POSTS MANIPULATION MENU
+
     private function postsChooser(){
         switch(Tools::numberRange('Option: ',1,5)){
             case 5:
                 $this->mainMenu();
                 break;
-            case 2:
-                $this->createNewPost();
-                break;
             case 1:
                 $this->readPosts();
                 break;
+            case 2:
+                $this->createNewPost();
+                break;
             case 3:
-                if(count($this->users)===0){
-                    echo 'No users in APP' . PHP_EOL;
-                    $this->postsMenu();
-                }else{
-                    $this->editPost();
-                }
+                $this->editPost();
                 break;
             case 4:
-                if(count($this->users)===0){
-                    echo 'No users in APP' . PHP_EOL;
-                    $this->postsMenu();
-                } else{
                 $this->deletePost();
-                }
                 break;
         }
     }
@@ -176,14 +170,16 @@ class Main{
         $this->usersMenu();
     }
 
+    // FUNCTION FOR MANUAL POST CREATION
+
     private function createNewPost(){
         if((count($this->users))===0){echo 'CREATE AN USER FIRST !' . PHP_EOL; $this->postsMenu();} else{
-        $o = new stdClass();
-        $o->postname = Tools::textInput('Name of the post: ');
-        $o->postdesc = Tools::textInput('Enter the description: ');
         $this->readUsers(false);
         $ww = Tools::numberRange('Choose user: ',1,count($this->users));
         $ww--;
+        $o = new stdClass();
+        $o->postname = Tools::textInput('Name of the post: ');
+        $o->postdesc = Tools::textInput('Enter the description: ');
         $this->users[$ww]->post[] = $o;
         echo '-----------' . PHP_EOL;
         echo ' SUCCESS ! ' . PHP_EOL;
@@ -208,6 +204,8 @@ class Main{
         }
     }
 
+    // FUNCTION FOR DISPLAYING POSTS IN APP
+
     private function readPosts($showMenu=true){
         if(count($this->users)!==0){
         echo '--------------------------' . PHP_EOL;
@@ -229,11 +227,12 @@ class Main{
         if($showMenu){
             $this->postsMenu();
         }
-    }
+        }
 
-    } else{
+        } else{
         echo 'CREATE AN USER FIRST !' . PHP_EOL; $this->postsMenu();
-    }
+        }
+        return $rr;
     }
 
     // FUNCTION FOR EDITING USER INFORMATION
@@ -251,6 +250,23 @@ class Main{
         $this->usersMenu();
     }
 
+    // FUNCTION FOR EDITING POST INFORMATION
+
+    private function editPost($edit=true){
+        $rr = $this->readPosts(false);
+        echo '' . PHP_EOL;
+        $ww = Tools::numberRange('Choose post: ',1,count($this->users[$rr]->post));
+        $ww--;
+        if($edit){
+        $this->users[$rr]->post[$ww]->postname = Tools::textInput('Post name ('.$this->users[$rr]->post[$ww]->postname.'): ',$this->users[$rr]->post[$ww]->postname); 
+        $this->users[$rr]->post[$ww]->postdesc = Tools::textInput('Post description ('.$this->users[$rr]->post[$ww]->postdesc.'): ',$this->users[$rr]->post[$ww]->postdesc); 
+        echo '--------------' . PHP_EOL;
+        echo '   SUCCESS !  ' . PHP_EOL;
+        $this->postsMenu();
+        }
+        return $ww;
+    }
+
     // FUNCTION FOR DELETING USER
 
     private function deleteUser(){
@@ -263,7 +279,18 @@ class Main{
         $this->usersMenu();
     }
 
-    // DEV FUNCTION FOR EXAMPLE USER INFO (SO THAT DEVELOPERS DO NOT NEED TO MANUALLY ADD USERS EVERY TIME APP IS CALLED)
+    private function deletePost(){
+        $rr = $this->readPosts(false); // USER ID
+        echo '' . PHP_EOL;
+        $ww = Tools::numberRange('Choose post: ',1,count($this->users[$rr]->post));
+        $ww--; // POST ID
+        array_splice($this->users[$rr]->post,$ww,1);
+        echo '--------------' . PHP_EOL;
+        echo '   SUCCESS !  ' . PHP_EOL;
+        $this->postsMenu();
+    }
+
+    // DEV FUNCTION FOR EXAMPLE USER INFO (SO THAT DEVELOPERS DO NOT NEED TO MANUALLY ADD INFO EVERY TIME APP IS CALLED)
     private function testInfo(){
         $this->users[] = $this->createUser('Ivan','Ivanovič','ivan@example.com','samplepw');
         $this->users[] = $this->createUser('Mirta','Martac','mirta@example.com','mrita123');
