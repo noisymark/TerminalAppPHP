@@ -5,7 +5,7 @@ class Tools{
         while(true){
             $i=readline($message);
             $i=(int)$i;
-            if($i<$min || $i>$max){
+            if($i<$min || $i>$max || $i==''){
                 echo 'Input must be between ' . $min . ' & ' . $max . PHP_EOL;
                 continue;
             }

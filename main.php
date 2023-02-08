@@ -9,8 +9,7 @@ class Main{
 
     // CONSTRUCTOR - EXECUTES ON PROGRAM STARTUP
 
-    public function __construct($argc,$argv)
-    {
+    public function __construct($argc,$argv){
         if($argc>1 && $argv[1]=='dev'){
             //$this->testInfo();
             $this->dev=true;
@@ -60,7 +59,9 @@ class Main{
             case 2:
                 $this->postsMenu();
                 break;
-            
+            case 3:
+                $this->friendshipsMenu();
+                break;
             default:
             echo 'NOT IMPLEMENTED YET !' . PHP_EOL;
             $this->mainMenu();
@@ -95,6 +96,21 @@ class Main{
         echo '5. GO BACK' . PHP_EOL;
         echo '---------------' . PHP_EOL;
         $this->postsChooser();
+    }
+
+    // FRIENDSHIPS MANIPULATION MENU
+
+    private function friendshipsMenu(){
+        echo '---------------' . PHP_EOL;
+        echo 'FRIENDSHIP MENU' . PHP_EOL;
+        echo '---------------' . PHP_EOL;
+        echo '1. READ' . PHP_EOL;
+        echo '2. CREATE' . PHP_EOL;
+        echo '3. UPDATE (Delete & add friends on your friends list)' . PHP_EOL;
+        echo '4. DELETE (Delete friend from your friends list)' . PHP_EOL;
+        echo '5. GO BACK' . PHP_EOL;
+        echo '---------------' . PHP_EOL;
+        $this->friendshipsChooser();
     }
 
     // OPTION CHOOSER FOR USER MANIPULATION MENU
@@ -156,6 +172,28 @@ class Main{
         }
     }
 
+    // OPTION CHOOSER FOR POSTS MANIPULATION MENU
+
+    private function friendshipsChooser(){
+        switch(Tools::numberRange('Option: ',1,5)){
+            case 5:
+                $this->mainMenu();
+                break;
+            case 1:
+                $this->readFriendships();
+                break;
+            case 2:
+                $this->createNewFriendship();
+                break;
+            case 3:
+                $this->editFriendship();
+                break;
+            case 4:
+                $this->deleteFriendship();
+                break;
+        }
+    }
+
     // FUNCTION FOR MANUAL USER CREATION
 
     private function createNewUser(){
@@ -185,6 +223,39 @@ class Main{
         echo ' SUCCESS ! ' . PHP_EOL;
         $this->postsMenu();
     }
+    }
+
+    // FUNCTION FOR MANUAL FRIENDSHIP CREATION
+
+    private function createNewFriendship(){
+        if((count($this->users))===0 || (count($this->users))<2){echo 'CREATE AT LEASt 2 USERS FIRST !' . PHP_EOL; $this->friendshipsMenu();} else{
+            $this->readUsers(false);
+            $qq = Tools::numberRange('Choose user: ',1,count($this->users));
+            $qq--;
+            $this->readUsers(false);
+            $rr = Tools::numberRange('Choose friend to add: ',1,count($this->users));
+            $rr--;
+            if(!isset($this->users[$qq]->friends)){$v[]=new stdClass; $this->users[$qq]->friends=$v;}
+            if(!isset($this->users[$rr]->friends)){$v[]=new stdClass; $this->users[$rr]->friends=$v;}
+            if(in_array($this->users[$rr],$this->users[$qq]->friends)){
+                echo 'This user is already your friend !' . PHP_EOL;
+                $this->friendshipsMenu();
+            } else if($this->users[$qq]===$this->users[$rr]){
+                echo 'You cannot add yourself as your friend !' . "\n" . 'IF YOU ARE DEPPRESED PLEASE VISIT YOUR SHRINK !' . PHP_EOL;
+                $this->friendshipsMenu();
+            } else {
+                $o = new stdClass();
+                $o = $this->users[$rr];
+                $this->users[$qq]->friends[] = $o;
+                $e = new stdClass();
+                $e = $this->users[$qq];
+                $this->users[$rr]->friends[] = $e;
+                echo '------------------------' . PHP_EOL;
+                echo ' FRIEND "' . $this->users[$rr]->fname . '" ADDED' . PHP_EOL;
+                echo '------------------------' . PHP_EOL;
+                $this->friendshipsMenu();
+            }
+        }
     }
 
     // FUNCTION FOR DISPLAYING USERS IN APP
@@ -235,6 +306,39 @@ class Main{
         return $rr;
     }
 
+    // FUNCTION FOR DISPLAYING FRIENDSHIPS IN APP
+
+    private function readFriendships($showMenu=true){
+        if((count($this->users))===0 || (count($this->users))<2){echo 'CREATE AT LEAST 2 USERS FIRST !' . PHP_EOL; $this->friendshipsMenu();} else{
+            $this->readUsers(false);
+            $ll = Tools::numberRange('Choose user: ',1,count($this->users));
+            $ll--;
+            if(isset($this->users[$ll]->friends)){$lm=$this->users[$ll]->friends;}else{$lm=null;}
+            if($lm===null || count($lm)===0){
+                // NO FRIENDS
+                echo 'THIS USER HAS NO FRIENDS !' . PHP_EOL;
+                echo '--------------------------' . PHP_EOL;
+                $this->friendshipsMenu();
+            } else{
+                $usb=1;
+                echo '------------------' . PHP_EOL;
+                echo '     FRIENDS :    ' . PHP_EOL;
+                echo '------------------' . PHP_EOL;
+                foreach($this->users[$ll]->friends as $friends){
+                    if(!isset($friends->fname)){
+                        continue;
+                    } else{
+                    echo $usb++ . '. ' .$friends->fname . ' ' . $friends->lname . PHP_EOL;
+                    }
+                }
+            }
+        if($showMenu){
+            $this->friendshipsMenu();
+        }
+        }
+    return $ll; // USER ID
+    }
+
     // FUNCTION FOR EDITING USER INFORMATION
 
     private function editUser(){
@@ -267,6 +371,39 @@ class Main{
         return $ww;
     }
 
+    // FUNCTION FOR EDITING FRIENDSHIPS
+
+    private function editFriendship(){
+        while(true){
+            if(Tools::numberRange('Do you want to unfriend someone? 1 for YES, 0 for NO: ',0,1)===1){
+            //REMOVE FRIENDS PART
+            $ll = $this->readFriendships(false);
+            $rm = Tools::numberRange('Choose user to unfriend: ',1,count($this->users[$ll]->friends));
+            //$rm--; === NEMA JER JE U ARRAYU PRVO MJESTO PRAZNO - NEMAM POJMA ZASTO ??
+            array_splice($this->users[$ll]->friends,$rm,1);
+            echo '-----------' . PHP_EOL;
+            echo ' SUCCESS ! ' . PHP_EOL;
+                if(Tools::numberRange('Unfriend someone else? 1 for YES, 0 for NO: ',0,1)===0){
+                    break;
+                }
+            } else{
+                break;
+            }
+        }
+        while(true){
+        if(Tools::numberRange('Do you want to add another friend? 1 for YES, 0 for NO: ',0,1)===1){
+        //ADD OTHER FRIENDS PART
+        $this->createNewFriendship();
+            if(Tools::numberRange('Add another friend? 1 for YES, 0 for NO: ',0,1)===0){
+                break;
+            }
+        } else{
+            break;
+        }
+    }
+    $this->friendshipsMenu();
+}
+
     // FUNCTION FOR DELETING USER
 
     private function deleteUser(){
@@ -278,6 +415,8 @@ class Main{
         echo '   SUCCESS !  ' . PHP_EOL;
         $this->usersMenu();
     }
+    
+    // FUNCTION FOR DELETING POSTS
 
     private function deletePost(){
         $rr = $this->readPosts(false); // USER ID
@@ -290,15 +429,36 @@ class Main{
         $this->postsMenu();
     }
 
+    // FUNCTION FOR DELETING FRIENDSHIPS
+
+    private function deleteFriendship(){
+        $ll = $this->readFriendships(false);
+        $pp = Tools::numberRange('Select user to remove from your friends list: ',1,count($this->users[$ll]->friends));
+        array_splice($this->users[$ll]->friends,$pp,1);
+        echo '-----------' . PHP_EOL;
+        echo ' SUCCESS ! ' . PHP_EOL;
+        $this->friendshipsMenu();
+    }
+
     // DEV FUNCTION FOR EXAMPLE USER INFO (SO THAT DEVELOPERS DO NOT NEED TO MANUALLY ADD INFO EVERY TIME APP IS CALLED)
     private function testInfo(){
         $this->users[] = $this->createUser('Ivan','Ivanovič','ivan@example.com','samplepw');
         $this->users[] = $this->createUser('Mirta','Martac','mirta@example.com','mrita123');
         $this->users[] = $this->createUser('Janko','Jaković','janko@example.com','jasamjanko');
+        $this->users[] = $this->createUser('Janko','Jaković','jaaanko@example.com','istialidrugi');
 
         $this->users[0]->post[] = $this->createPost('Test1','Desc1');
         $this->users[1]->post[] = $this->createPost('Test2','Desc2');
         $this->users[2]->post[] = $this->createPost('Test3','Desc3');
+        $this->users[3]->post[] = $this->createPost('Test4','Desc4');
+
+        $this->createFriendship(0,1);
+        $this->createFriendship(0,2);
+        $this->createFriendship(0,3);
+        $this->createFriendship(1,2);
+        $this->createFriendship(1,3);
+        $this->createFriendship(2,3);
+
     }
 
     // AUTOMATIC FUNCTION TO CREATE USERS - TYPICALLY FOR TESTINFO FUNCTION
@@ -317,6 +477,17 @@ class Main{
         $o->postname=$postname;
         $o->postdesc=$postdesc;
         return $o;
+    }
+
+    // AUTOMATIC FUNCTION TO CREATE FRIENDSHIPS - TYPICALLY FOR TESTINFO FUNCTION
+
+    private function createFriendship($friend1,$friend2){
+        $o = new stdClass();
+        $o = $this->users[$friend2];
+        $v = new stdClass();
+        $v = $this->users[$friend1];
+        $this->users[$friend1]->friends[] = $o;
+        $this->users[$friend2]->friends[] = $v;
     }
 
 }
