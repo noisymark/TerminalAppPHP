@@ -241,9 +241,12 @@ class Main{
                 echo 'This user is already your friend !' . PHP_EOL;
                 $this->friendshipsMenu();
             } else if($this->users[$qq]===$this->users[$rr]){
-                echo 'You cannot add yourself as your friend !' . "\n" . 'IF YOU ARE DEPPRESED PLEASE VISIT YOUR SHRINK !' . PHP_EOL;
+                echo 'You cannot add yourself as your friend !' . PHP_EOL;
                 $this->friendshipsMenu();
-            } else {
+            } else if(count($this->users)<2){
+                echo ' YOU NEED TO HAVE 2 USERS TO BE ABLE TO CREATE A PROPER FRIENDSHIP ! '.PHP_EOL;
+            }
+             else {
                 $o = new stdClass();
                 $o = $this->users[$rr];
                 $this->users[$qq]->friends[] = $o;
@@ -278,6 +281,7 @@ class Main{
     // FUNCTION FOR DISPLAYING POSTS IN APP
 
     private function readPosts($showMenu=true){
+        $rr='';
         if(count($this->users)!==0){
         echo '--------------------------' . PHP_EOL;
         echo 'SELECT USER TO VIEW POSTS:' . PHP_EOL;
@@ -309,6 +313,7 @@ class Main{
     // FUNCTION FOR DISPLAYING FRIENDSHIPS IN APP
 
     private function readFriendships($showMenu=true){
+        $ll='';
         if((count($this->users))===0 || (count($this->users))<2){echo 'CREATE AT LEAST 2 USERS FIRST !' . PHP_EOL; $this->friendshipsMenu();} else{
             $this->readUsers(false);
             $ll = Tools::numberRange('Choose user: ',1,count($this->users));
@@ -359,6 +364,7 @@ class Main{
     private function editPost($edit=true){
         $rr = $this->readPosts(false);
         echo '' . PHP_EOL;
+        if(count($this->users)==null){ echo PHP_EOL;} else{
         $ww = Tools::numberRange('Choose post: ',1,count($this->users[$rr]->post));
         $ww--;
         if($edit){
@@ -370,14 +376,27 @@ class Main{
         }
         return $ww;
     }
+    }
 
     // FUNCTION FOR EDITING FRIENDSHIPS
 
     private function editFriendship(){
-        while(true){
+        $x=true;
+        if(count($this->users)<2){
+            $x=false;
+            echo ' CREATE AT LEAST 2 USERS ' . PHP_EOL;
+        }
+        while($x){
+            if(count($this->users)<2){
+                echo ' CREATE AT LEAST 2 USERS !' . PHP_EOL;
+            }
             if(Tools::numberRange('Do you want to unfriend someone? 1 for YES, 0 for NO: ',0,1)===1){
             //REMOVE FRIENDS PART
             $ll = $this->readFriendships(false);
+            if(count($this->users[$ll]->friends)<1){
+                echo ' NO MORE FRIENDS TO UNFRIEND '.PHP_EOL;
+                break;
+            }
             $rm = Tools::numberRange('Choose user to unfriend: ',1,count($this->users[$ll]->friends));
             //$rm--; === NEMA JER JE U ARRAYU PRVO MJESTO PRAZNO - NEMAM POJMA ZASTO ??
             array_splice($this->users[$ll]->friends,$rm,1);
@@ -390,7 +409,7 @@ class Main{
                 break;
             }
         }
-        while(true){
+        while($x){
         if(Tools::numberRange('Do you want to add another friend? 1 for YES, 0 for NO: ',0,1)===1){
         //ADD OTHER FRIENDS PART
         $this->createNewFriendship();
@@ -421,23 +440,27 @@ class Main{
     private function deletePost(){
         $rr = $this->readPosts(false); // USER ID
         echo '' . PHP_EOL;
+        if(count($this->users)==null){ echo PHP_EOL;} else{
         $ww = Tools::numberRange('Choose post: ',1,count($this->users[$rr]->post));
         $ww--; // POST ID
         array_splice($this->users[$rr]->post,$ww,1);
         echo '--------------' . PHP_EOL;
         echo '   SUCCESS !  ' . PHP_EOL;
         $this->postsMenu();
+        }
     }
 
     // FUNCTION FOR DELETING FRIENDSHIPS
 
     private function deleteFriendship(){
         $ll = $this->readFriendships(false);
-        $pp = Tools::numberRange('Select user to remove from your friends list: ',1,count($this->users[$ll]->friends));
+        if(count($this->users)==null){ echo PHP_EOL;} else{
+        $pp = Tools::numberRange('Select user to remove from your friends list: ',1,count($this->users[$ll]->friends)-1);
         array_splice($this->users[$ll]->friends,$pp,1);
         echo '-----------' . PHP_EOL;
         echo ' SUCCESS ! ' . PHP_EOL;
         $this->friendshipsMenu();
+        }  
     }
 
     // DEV FUNCTION FOR EXAMPLE USER INFO (SO THAT DEVELOPERS DO NOT NEED TO MANUALLY ADD INFO EVERY TIME APP IS CALLED)
