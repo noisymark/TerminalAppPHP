@@ -13,4 +13,4 @@
 - [X] 2/5 Parts of the app has CRUD functions working (Users and posts part)
 - [X] 3/5 Parts of the app has CRUD functions working (Users, posts and friendships part)
 - [X] 4/5 Parts of the app has CRUD functions working (Users, posts and post likes part)
-- [ ] 4/5 Parts of the app has CRUD functions working (Users, posts, post likes and comments part)
+- [X] 4/5 Parts of the app has CRUD functions working (Users, posts, post likes and comments part)
