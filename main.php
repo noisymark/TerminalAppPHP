@@ -66,6 +66,9 @@ class Main{
             case 4:
                 $this->likesMenu();
                 break;
+            case 5:
+                $this->commentsMenu();
+                break;
             default:
             echo 'NOT IMPLEMENTED YET !' . PHP_EOL;
             $this->mainMenu();
@@ -127,6 +130,19 @@ class Main{
         echo '4. GO BACK' . PHP_EOL;
         echo '---------------' . PHP_EOL;
         $this->likesChooser();
+    }
+
+    private function commentsMenu(){
+        echo '---------------' . PHP_EOL;
+        echo ' COMMENTS MENU ' . PHP_EOL;
+        echo '---------------' . PHP_EOL;
+        echo '1. READ' . PHP_EOL;
+        echo '2. CREATE' . PHP_EOL;
+        echo '3. DELETE' . PHP_EOL;
+        echo '4. UPDATE' . PHP_EOL;
+        echo '5. GO BACK' . PHP_EOL;
+        echo '---------------' . PHP_EOL;
+        $this->commentsChooser();
     }
 
     // OPTION CHOOSER FOR USER MANIPULATION MENU
@@ -223,6 +239,26 @@ class Main{
                 break;
             case 3:
                 $this->deleteLike();
+                break;
+        }
+    }
+
+    private function commentsChooser(){
+        switch(Tools::numberRange('Option: ',1,5)){
+            case 5:
+                $this->mainMenu();
+                break;
+            case 1:
+                $this->readComments();
+                break;
+            case 2:
+                $this->createNewComment();
+                break;
+            case 3:
+                $this->updateComment();
+                break;
+            case 4:
+                $this->deleteComment();
                 break;
         }
     }
@@ -326,6 +362,30 @@ class Main{
         }
     }
     }
+
+    private function createNewComment(){
+        if(count($this->users)<1){echo ' YOU NEED AT LEAST 1 USER TO BE ABLE TO DO THAT !';} else{
+        $this->readUsers(false);
+        $lk = Tools::numberRange('Choose user who is commenting: ',1,count($this->users)); // USER ID OF COMMENTER
+        $lk--;
+        $rm=$this->readPosts(false,false); // USER ID OF POST OWNER
+        $om=Tools::numberRange('Choose post to like: ',1,count($this->users[$rm]->post)); // POST ID
+        $om--;
+        $pp=Tools::textInput('Enter your comment: ');
+        if(!isset($this->users[$rm]->post) || !isset($this->users)){$lof=null;} else {$lof=$this->users[$rm]->post;}
+        if($lof===null || count($lof)===0){
+            $this->likesMenu();
+        }
+            $o = new stdClass();
+            $o = $this->users[$lk];
+            $o->context = $pp;
+            $this->users[$rm]->post[$om]->comments[] = $o;
+            echo 'USER ' . $this->users[$lk]->fname . ' ' . $this->users[$lk]->lname . ' COMMENTED POST ' . $this->users[$rm]->post[$om]->postname . PHP_EOL;
+            echo 'COMMENT: ' . $pp . PHP_EOL;
+            $this->commentsMenu();
+
+    }
+}
 
     // FUNCTION FOR DISPLAYING USERS IN APP
 
@@ -441,6 +501,38 @@ class Main{
         }
     }
     return array($rm,$om);
+    }
+
+    private function readComments($showMenu=true){
+        $rm=$this->readPosts(false,false);
+        if(!isset($this->users[$rm]->post) || !isset($this->users)){$lof=null;} else {$lof=$this->users[$rm]->post;}
+        if($lof===null || count($lof)===0){
+            $this->commentsMenu();
+        } else{
+            $om=Tools::numberRange('Choose post to view comments: ',1,count($this->users[$rm]->post));
+            $om--;
+            if(!isset($this->users[$rm]->post[$om]->comments) || !isset($this->users[$rm]->post)){$lol=null;} else {$lol=$this->users[$rm]->post[$om]->comments;}
+            if($lol===null || count($lol)===0){
+                // NO COMMENTS
+                echo ' THIS POST HAS NO COMMENTS ! ' . PHP_EOL;
+                $this->commentsMenu();
+            } else {
+                // HAS COMMENTS
+                $nn=1;
+                echo '--------------------------' . PHP_EOL;
+                echo 'POST: ' . $this->users[$rm]->post[$om]->postname . PHP_EOL;
+                echo 'OWNED BY: ' . $this->users[$rm]->fname . ' ' . $this->users[$rm]->lname . PHP_EOL;
+                foreach($this->users[$rm]->post[$om]->comments as $comment){
+                    echo '--------------------------' . PHP_EOL;
+                    echo $nn++ . '. ' . 'USER: ' . $comment->fname . ' ' . $comment->lname . PHP_EOL;
+                    echo 'COMMENT: ' . $comment->context . PHP_EOL;
+
+                } if($showMenu){
+                    $this->commentsMenu();
+                }
+            }
+        }
+        return array($rm,$om);
     }
 
     // FUNCTION FOR EDITING USER INFORMATION
