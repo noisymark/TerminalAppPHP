@@ -38,8 +38,9 @@ class Main{
         echo '1. USERS' . PHP_EOL;
         echo '2. POSTS' . PHP_EOL;
         echo '3. FRIENDSHIPS' . PHP_EOL;
-        echo '4. POST LIKES' . PHP_EOL;
-        echo '5. EXIT PROGRAM' . PHP_EOL;
+        echo '4. POSTS-LIKES' . PHP_EOL;
+        echo '5. POSTS-COMMENTS' . PHP_EOL;
+        echo '6. EXIT PROGRAM' . PHP_EOL;
         echo '---------------' . PHP_EOL;
         $this->mainMenuChooser();
     }
@@ -47,8 +48,8 @@ class Main{
     // OPTION CHOOSER FOR MAIN MENU
 
     private function mainMenuChooser(){
-        switch(Tools::numberRange('Option: ',1,5)){
-            case 5:
+        switch(Tools::numberRange('Option: ',1,6)){
+            case 6:
                 echo '-----------' . PHP_EOL;
                 echo ' Goodbye ! ' . PHP_EOL;
                 echo '-----------' . PHP_EOL;
@@ -61,6 +62,9 @@ class Main{
                 break;
             case 3:
                 $this->friendshipsMenu();
+                break;
+            case 4:
+                $this->likesMenu();
                 break;
             default:
             echo 'NOT IMPLEMENTED YET !' . PHP_EOL;
@@ -111,6 +115,18 @@ class Main{
         echo '5. GO BACK' . PHP_EOL;
         echo '---------------' . PHP_EOL;
         $this->friendshipsChooser();
+    }
+
+    private function likesMenu(){
+        echo '---------------' . PHP_EOL;
+        echo '   LIKES MENU  ' . PHP_EOL;
+        echo '---------------' . PHP_EOL;
+        echo '1. READ' . PHP_EOL;
+        echo '2. CREATE' . PHP_EOL;
+        echo '3. DELETE' . PHP_EOL;
+        echo '4. GO BACK' . PHP_EOL;
+        echo '---------------' . PHP_EOL;
+        $this->likesChooser();
     }
 
     // OPTION CHOOSER FOR USER MANIPULATION MENU
@@ -193,6 +209,23 @@ class Main{
                 break;
         }
     }
+    
+    private function likesChooser(){
+        switch(Tools::numberRange('Option: ',1,4)){
+            case 4:
+                $this->mainMenu();
+                break;
+            case 1:
+                $this->readLikes();
+                break;
+            case 2:
+                $this->createNewLike();
+                break;
+            case 3:
+                $this->deleteLike();
+                break;
+        }
+    }
 
     // FUNCTION FOR MANUAL USER CREATION
 
@@ -261,6 +294,38 @@ class Main{
         }
     }
 
+    private function createNewLike(){
+        if(count($this->users)<2){echo ' YOU NEED AT LEAST 2 USERS TO BE ABLE TO DO THAT !';} else{
+        $this->readUsers(false);
+        $lk = Tools::numberRange('Choose user who is liking: ',1,count($this->users)); // USER ID OF LIKER
+        $rm=$this->readPosts(false,false); // USER ID OF POST OWNER
+        if(!isset($this->users[$rm]->post) || !isset($this->users)){$lof=null;} else {$lof=$this->users[$rm]->post;}
+        if($lof===null || count($lof)===0){
+            $this->likesMenu();
+        } else{
+        $om=Tools::numberRange('Choose post to like: ',1,count($this->users[$rm]->post)); // POST ID
+        $om--;
+        if(isset($this->users[$rm]->post[$om]->likes)){
+        if(in_array($this->users[$lk],$this->users[$rm]->post[$om]->likes)){
+            echo 'USER' . $this->users[$lk]->fname . ' ' . $this->users[$lk]->lname . ' ALREADY LIKES THIS POST' . PHP_EOL;
+        } else{
+            $o = new stdClass();
+            $o = $this->users[$lk];
+            $this->users[$rm]->post[$om]->likes[] = $o;
+            echo 'USER ' . $this->users[$lk]->fname . ' ' . $this->users[$lk]->lname . ' NOW LIKES POST ' . $this->users[$rm]->post[$om]->postname . PHP_EOL;
+            $this->likesMenu();
+        }
+    } else{
+            $o = new stdClass();
+            $o = $this->users[$lk];
+            $this->users[$rm]->post[$om]->likes[] = $o;
+            echo 'USER ' . $this->users[$lk]->fname . ' ' . $this->users[$lk]->lname . ' NOW LIKES POST ' . $this->users[$rm]->post[$om]->postname . PHP_EOL;
+            $this->likesMenu();
+    }
+        }
+    }
+    }
+
     // FUNCTION FOR DISPLAYING USERS IN APP
 
     private function readUsers($showMenu=true){
@@ -280,7 +345,7 @@ class Main{
 
     // FUNCTION FOR DISPLAYING POSTS IN APP
 
-    private function readPosts($showMenu=true){
+    private function readPosts($showMenu=true,$otherBack=true){
         $rr='';
         if(count($this->users)!==0){
         echo '--------------------------' . PHP_EOL;
@@ -292,13 +357,15 @@ class Main{
         if($rw===null || count($rw)===0){
             echo 'THIS USER HAS NO POSTS !' . PHP_EOL;
             echo '--------------------------' . PHP_EOL;
+            if($otherBack){
             $this->postsMenu();
+            }
         } else{
         $csu=1;
         foreach($this->users[$rr]->post as $posts){
             echo $csu++ . '. ' . 'PostName: ' .$posts->postname . "\n" . '   Description: ' . $posts->postdesc . PHP_EOL;
         }
-        echo '------------';
+        echo '------------' . PHP_EOL;
         if($showMenu){
             $this->postsMenu();
         }
@@ -342,6 +409,36 @@ class Main{
         }
         }
     return $ll; // USER ID
+    }
+
+    private function readLikes($showMenu=true){
+        $rm=$this->readPosts(false,false);
+        if(!isset($this->users[$rm]->post) || !isset($this->users)){$lof=null;} else {$lof=$this->users[$rm]->post;}
+        if($lof===null || count($lof)===0){
+            $this->likesMenu();
+        } else{
+        $om=Tools::numberRange('Choose post to view likes: ',1,count($this->users[$rm]->post));
+        $om--;
+        if(!isset($this->users[$rm]->post[$om]->likes) || !isset($this->users[$rm]->post)){$lol=null;} else {$lol=$this->users[$rm]->post[$om]->likes;}
+        if($lol===null || count($lol)===0){
+            //NO LIKES
+            echo ' THIS POST HAS NO LIKES ! '.PHP_EOL;
+            $this->likesMenu();
+        } else{
+            // HAS LIKES
+            $nn=1;
+            echo '--------------------------' . PHP_EOL;
+            echo 'POST: ' . $this->users[$rm]->post[$om]->postname . PHP_EOL;
+            echo 'OWNED BY: ' . $this->users[$rm]->fname . ' ' . $this->users[$rm]->lname . PHP_EOL;
+            echo '--------------------------' . PHP_EOL;
+            echo 'LIKED BY: ' . PHP_EOL;
+            foreach($this->users[$rm]->post[$om]->likes as $like){
+                echo $nn++ . '. ' . $like->fname . ' ' . $like->lname . PHP_EOL;
+            }
+        } if($showMenu){
+        $this->likesMenu();
+        }
+    }
     }
 
     // FUNCTION FOR EDITING USER INFORMATION
