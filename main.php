@@ -298,6 +298,7 @@ class Main{
         if(count($this->users)<2){echo ' YOU NEED AT LEAST 2 USERS TO BE ABLE TO DO THAT !';} else{
         $this->readUsers(false);
         $lk = Tools::numberRange('Choose user who is liking: ',1,count($this->users)); // USER ID OF LIKER
+        $lk--;
         $rm=$this->readPosts(false,false); // USER ID OF POST OWNER
         if(!isset($this->users[$rm]->post) || !isset($this->users)){$lof=null;} else {$lof=$this->users[$rm]->post;}
         if($lof===null || count($lof)===0){
@@ -439,6 +440,7 @@ class Main{
         $this->likesMenu();
         }
     }
+    return array($rm,$om);
     }
 
     // FUNCTION FOR EDITING USER INFORMATION
@@ -558,6 +560,20 @@ class Main{
         echo ' SUCCESS ! ' . PHP_EOL;
         $this->friendshipsMenu();
         }  
+    }
+
+    private function deleteLike(){
+        $gg = $this->readLikes(false);
+        $ml = $gg[0];
+        $nl = $gg[1];
+        if(count($this->users)==null){echo PHP_EOL;} else{
+            $tt = Tools::numberRange('Select like to erase: ',1,count($this->users[$ml]->post[$nl]->likes));
+            $tt--; // LIKE ID
+            array_splice($this->users[$gg[0]]->post[$gg[1]]->likes,$tt,1);
+            echo '-----------' . PHP_EOL;
+            echo ' SUCCESS ! ' . PHP_EOL;
+            $this->likesMenu();
+        }
     }
 
     // DEV FUNCTION FOR EXAMPLE USER INFO (SO THAT DEVELOPERS DO NOT NEED TO MANUALLY ADD INFO EVERY TIME APP IS CALLED)
