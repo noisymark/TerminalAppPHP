@@ -138,8 +138,8 @@ class Main{
         echo '---------------' . PHP_EOL;
         echo '1. READ' . PHP_EOL;
         echo '2. CREATE' . PHP_EOL;
-        echo '3. DELETE' . PHP_EOL;
-        echo '4. UPDATE' . PHP_EOL;
+        echo '3. UPDATE' . PHP_EOL;
+        echo '4. DELETE' . PHP_EOL;
         echo '5. GO BACK' . PHP_EOL;
         echo '---------------' . PHP_EOL;
         $this->commentsChooser();
@@ -255,7 +255,7 @@ class Main{
                 $this->createNewComment();
                 break;
             case 3:
-                $this->updateComment();
+                $this->editComment();
                 break;
             case 4:
                 $this->deleteComment();
@@ -569,6 +569,31 @@ class Main{
     }
     }
 
+    private function editComment(){
+        $oo = $this->readComments(false);
+        $o1 = $oo[0]; // USER ID
+        $o2 = $oo[1]; // POST ID
+        if(!isset($this->users[$o1]->post[$o2]->comments) || !isset($this->users[$o1]->post)){$lmao=null;} else {$lmao=$this->users[$o1]->post[$o2]->comments;}
+        if($lmao===null || count($lmao)===0){
+            $this->commentsMenu();
+        } else{
+        $rr = Tools::numberRange('Which comment you want to edit: ',1,count($this->users[$o1]->post[$o2]->comments));
+        $rr--; // COMMENT ID
+        if(Tools::numberRange('Do you want to change the COMMENT OWNER? 1 FOR YES, 0 FOR NO: ',0,1)===1){
+            // OWNER CHANGE
+            $this->readUsers(false);
+            $mm = Tools::numberRange('Choose new owner of comment: ',1,count($this->users));
+            $mm--;
+            $this->users[$o1]->post[$o2]->comments[$rr] = $this->users[$mm];
+        }
+        if(Tools::numberRange('Do you want to change the COMMENT CONTEXT? 1 FOR YES, 0 FOR NO: ',0,1)===1){
+        $this->users[$o1]->post[$o2]->comments[$rr]->context = Tools::textInput('Comment: ',$this->users[$o1]->post[$o2]->comments[$rr]->context);
+        }
+        echo ' SUCCESSFULLY CHANGED ! ' . PHP_EOL;
+        $this->commentsMenu();
+        }
+    }
+
     // FUNCTION FOR EDITING FRIENDSHIPS
 
     private function editFriendship(){
@@ -666,6 +691,20 @@ class Main{
             echo ' SUCCESS ! ' . PHP_EOL;
             $this->likesMenu();
         }
+    }
+
+    private function deleteComment(){
+        $oo = $this->readComments(false);
+        $o1 = $oo[0]; // USER ID
+        $o2 = $oo[1]; // POST ID
+        $pw = Tools::numberRange('Choose comment to delete: ',1,count($this->users[$o1]->post[$o2]->comments));
+        $pw--;
+        if(Tools::numberRange('Are you sure? 1 FOR YES, 0 FOR NO: ',0,1)===1){
+            array_splice($this->users[$o1]->post[$o2]->comments,$pw,1);
+            echo '-----------' . PHP_EOL;
+            echo ' SUCCESS ! ' . PHP_EOL;
+        }
+        $this->commentsMenu();
     }
 
     // DEV FUNCTION FOR EXAMPLE USER INFO (SO THAT DEVELOPERS DO NOT NEED TO MANUALLY ADD INFO EVERY TIME APP IS CALLED)
